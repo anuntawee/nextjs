@@ -1,4 +1,3 @@
-
 version: 
   stg: stg-latest
   prd: prd-latest

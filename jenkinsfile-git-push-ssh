@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+        parameters {
+            string(name: 'fileNamebuild', defaultValue: '', description: 'Variable from upstream')
+            string(name: 'NEXUS_CONTAINER', defaultValue: '', description: 'Variable from upstream')
+        }
+
+    stages {
+        stage('Set ENV') {
+            steps {
+                script{
+                env.FILENAMEBUILD = "${params.fileNamebuild}"
+                env.NEXUS_CONTAINER = "${params.NEXUS_CONTAINER}"
+                }
+
+            }
+        }
+        stage('Checkout') {
+            steps {
+                    git branch: '20220915', credentialsId: 'PONPIC1_git', url: 'git@10.2.2.21:g-able/rcl-devops.git'
+                }
+            }
+        stage('Make Changes and Push') {
+            steps {
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'PONPIC1_git', keyFileVariable: 'SSH_KEY_FILE')]) {
+                        sh """
+                        cd config
+                        ls -lrt
+                        echo "testpush" > config.yml
+                        git add .
+                        git commit -m "test push"
+                        ssh-agent sh -c \'
+                        ssh-add ${SSH_KEY_FILE}
+                        git push --set-upstream origin 20220915
+                        \'
+                        """
+                    }
+                }
+            }
+        }
+        stage('Deploy To EKS') {
+            steps {
+                script {
+                    imagename = "${NEXUS_CONTAINER}/${FILENAMEBUILD.toLowerCase()}"
+                    namespace = "${FILENAMEBUILD.toLowerCase().replace("_","-")}"
+                    app_name = "${FILENAMEBUILD.toLowerCase().replace("_","-")}"
+                    echo "app name :  ${app_name}"
+                    echo "imagename : ${imagename}"
+                    echo "namespace : ${namespace}"
+                        }
+                    }
+                }
+            }
+        }

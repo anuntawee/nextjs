@@ -1,0 +1,31 @@
+version: 
+  stg: stg-latest
+  prd: prd-latest
+env: 
+  env_stg : stg
+  env_prd : prd
+ingress_host:
+  internal:
+    stg: mako.rclgroup.local
+    prod: wahoo.rclgroup.local
+  external:
+    stg:  mako.rclgroup.com
+    prod: wahoo.rclgroup.com
+replicas: 1
+nfs_server: 10.24.17.151
+hpa:
+  enable: true
+  stg:
+    min: 1
+    max: 2
+  prd:
+    min: 1
+    max: 3
+database:
+  stg:
+    dbpool02: jdbc:oracle:thin:@lgsstgodbsg-srv.rclgroup.local:1521:SGSDOL30
+    dbpool01: jdbc:oracle:thin:@10.24.16.21:1521/SGSDOL30
+  prod:
+    dbpool01: jdbc:oracle:thin:@10.24.17.25:1521:SGPDOL10
+    dbpool02: jdbc:oracle:thin:@rcllprdodbsg-srv.rclgroup.com:1521:SGPDOL20
+    dbpool03: jdbc:sqlserver://awsprdweb01:1433;DatabaseName=SGPRDWEBDATA
